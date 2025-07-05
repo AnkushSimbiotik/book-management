@@ -1,34 +1,56 @@
-import { Injectable, NotFoundException } from '@nestjs/common';
+import {
+  Injectable,
+  NotFoundException,
+  BadRequestException,
+} from '@nestjs/common';
 
 import { InjectModel } from '@nestjs/mongoose';
-
 import { Model } from 'mongoose';
+
+import { PaginationQueryDto } from 'src/common/pagination.dto';
 import { CreateBookDto, UpdateBookDto } from 'src/dtos/create-book.dto';
 import { Book } from 'src/schema/book.schema';
 
 @Injectable()
 export class BooksService {
   constructor(@InjectModel(Book.name) private bookModel: Model<Book>) {}
+
   create(createBookDto: CreateBookDto) {
     const newBook = new this.bookModel(createBookDto);
     return newBook.save();
   }
 
-  async findAll() {
-    return await this.bookModel.find().populate('topics').exec();
+  async findAll(pagination: PaginationQueryDto) {
+    const { offset = 1, limit = 10, sort } = pagination;
+
+    // Convert sort string to Mongoose sort object
+    let sortObject = {};
+    if (sort) {
+      sortObject = sort.split(',').reduce((acc, pair) => {
+        const [key, direction] = pair.split(':');
+        acc[key] = direction === 'desc' ? -1 : 1;
+        return acc;
+      }, {});
+    }
+
+    const query = this.bookModel
+      .find()
+      .skip((offset - 1) * limit)
+      .limit(limit)
+      .sort(sortObject)
+      .populate('topics');
+
+    return await query.exec();
+
+    
   }
 
   async findOne(id: string) {
-    return await this.bookModel
-      .findOne({ _id: id })
-      .populate('topics')
-      .exec()
-      .then((book) => {
-        if (!book) {
-          throw new Error(`Book #${id} not found`);
-        }
-        return book;
-      });
+    const book = await this.bookModel.findOne({ _id: id }).populate('topics').exec();
+    if (!book) {
+      throw new NotFoundException(`Book with id ${id} not found`);
+    }
+    return book;
   }
 
   async update(id: string, updateBookDto: UpdateBookDto) {
@@ -36,7 +58,7 @@ export class BooksService {
       .findOneAndUpdate({ _id: id }, { $set: updateBookDto }, { new: true })
       .exec();
     if (!existingBook) {
-      throw new NotFoundException(`Book #${id} not found`);
+      throw new NotFoundException(`Book with id ${id} not found`);
     }
     return existingBook;
   }
@@ -46,7 +68,7 @@ export class BooksService {
       .findOneAndUpdate({ _id: id }, { isDeleted: true }, { new: true })
       .exec();
     if (!book) {
-      throw new NotFoundException(`Book #${id} not found`);
+      throw new NotFoundException(`Book with id ${id} not found`);
     }
     return book;
   }

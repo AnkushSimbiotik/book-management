@@ -7,9 +7,11 @@ import {
   Param,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
 import { TopicsService } from '../services/topics.service';
 import { CreateTopicDto, UpdateTopicDto } from '../dtos/create-topic.dto';
+import { PaginationQueryDto } from 'src/common/pagination.dto';
 
 @Controller('topics')
 export class TopicsController {
@@ -21,8 +23,8 @@ export class TopicsController {
   }
 
   @Get()
-  findAll() {
-    return this.topicsService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.topicsService.findAll(paginationQuery);
   }
 
   @Get('/:id')

@@ -1,4 +1,12 @@
-import { Body, Controller, HttpCode, HttpStatus, Param, Patch, Post } from '@nestjs/common';
+import {
+  Body,
+  Controller,
+  HttpCode,
+  HttpStatus,
+  Param,
+  Patch,
+  Post,
+} from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
@@ -7,9 +15,9 @@ import { UpdatePasswordDto } from './dto/update-password.dto';
 
 @Controller('authentication')
 export class AuthenticationController {
-    constructor(private readonly authService: AuthenticationService) {}
+  constructor(private readonly authService: AuthenticationService) {}
 
-    @Public()
+  @Public()
   @Post('sign-up')
   signUp(@Body() signUpDto: SignUpDto) {
     return this.authService.signUp(signUpDto);
@@ -22,12 +30,11 @@ export class AuthenticationController {
     return this.authService.signIn(signInDto);
   }
 
- @Patch(':id/password')
-async updatePassword(
-  @Param('id') id: string,
-  @Body() dto: UpdatePasswordDto,
-) {
-  return this.authService.updatePassword(id , dto);
+  @Patch(':id/password')
+  async updatePassword(
+    @Param('id') id: string,
+    @Body() dto: UpdatePasswordDto,
+  ) {
+    return this.authService.updatePassword(id, dto);
+  }
 }
-
-} 

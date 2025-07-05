@@ -28,7 +28,7 @@ import { User, UserSchema } from './schema/user.schema';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const uri = configService.get<string>('MONGO_URI');
-        console.log('MongoDB URI:', uri);
+       
         return {
           uri,
           connectionFactory: (connection) => {

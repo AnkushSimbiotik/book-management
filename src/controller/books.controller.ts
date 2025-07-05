@@ -7,7 +7,9 @@ import {
   Param,
   Delete,
   Put,
+  Query,
 } from '@nestjs/common';
+import { PaginationQueryDto } from 'src/common/pagination.dto';
 import { CreateBookDto, UpdateBookDto } from 'src/dtos/create-book.dto';
 import { BooksService } from 'src/services/books.service';
 
@@ -23,8 +25,8 @@ export class BooksController {
   }
 
   @Get()
-  findAll() {
-    return this.booksService.findAll();
+  findAll(@Query() paginationQuery: PaginationQueryDto) {
+    return this.booksService.findAll(paginationQuery);
   }
 
   @Get(':id')

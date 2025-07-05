@@ -11,6 +11,8 @@ import { AuthenticationService } from './authentication/authentication.service';
 import { AuthenticationController } from './authentication/authentication.controller';
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
+import { APP_GUARD } from '@nestjs/core';
+import { AccessTokenGuard } from './authentication/guards/access-token/access-token.guard';
 
 @Module({
   imports: [
@@ -19,6 +21,7 @@ import { HashingService } from './hashing/hashing.service';
     JwtModule.registerAsync({
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => ({
+        
         secret: configService.get<string>('JWT_SECRET'),
         signOptions: {
           expiresIn: configService.get<number>('JWT_ACCESS_TOKEN_TTL'),
@@ -28,6 +31,7 @@ import { HashingService } from './hashing/hashing.service';
       }),
       inject: [ConfigService],
     }),
+    
   ],
   providers: [
     AuthenticationService,
@@ -35,6 +39,10 @@ import { HashingService } from './hashing/hashing.service';
       provide: HashingService,
       useClass: BcryptService,
     },
+    {
+  provide: APP_GUARD,
+  useClass: AccessTokenGuard,
+},
     JwtService,
   ],
   controllers: [AuthenticationController],
