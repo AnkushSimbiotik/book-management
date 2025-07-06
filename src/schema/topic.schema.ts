@@ -6,6 +6,7 @@ import { Types } from 'mongoose';
   toJSON: {
     virtuals: true,
   },
+  timestamps : true
 })
 export class Topic {
   id: string;
@@ -22,12 +23,7 @@ isDeleted: boolean;
  @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 
-  @Prop({default : Date.now()})
-    @IsDataURI({})
-    createdAt: Date;
-  
-    @Prop({ default: Date.now() })
-    updatedAt: Date;
+ 
   
 }
 

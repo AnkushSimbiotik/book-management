@@ -1,3 +1,4 @@
+// authentication.controller.ts
 import {
   Body,
   Controller,
@@ -6,12 +7,15 @@ import {
   Param,
   Patch,
   Post,
+  Query,
+  Get,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
 import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
 import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
-import { Public } from 'src/common/decorators/public.decorator';
+
 import { UpdatePasswordDto } from './dto/update-password.dto';
+import { Public } from 'src/common/decorators/public.decorator';
 
 @Controller('authentication')
 export class AuthenticationController {
@@ -24,13 +28,19 @@ export class AuthenticationController {
   }
 
   @Public()
-  @HttpCode(HttpStatus.OK) // by default @Post does 201, we wanted 200 - hence using @HttpCode(HttpStatus.OK)
+  @HttpCode(HttpStatus.OK)
   @Post('sign-in')
   signIn(@Body() signInDto: SignInDto) {
     return this.authService.signIn(signInDto);
   }
 
-  @Patch(':id/password')
+  @Public()
+  @Get('verify')
+  verifyEmail(@Query('token') token: string) {
+    return this.authService.verifyEmail(token);
+  }
+
+  @Patch(':id/updatePassword')
   async updatePassword(
     @Param('id') id: string,
     @Body() dto: UpdatePasswordDto,

@@ -5,6 +5,7 @@ import { IsDataURI, IsEmail, IsStrongPassword, Matches, MinLength } from 'class-
   toJSON: {
     virtuals: true,
   },
+  timestamps : true
 })
 export class User {
   @Prop({})
@@ -31,12 +32,7 @@ export class User {
   )
   password: string;
 
-  @Prop({default : Date.now()})
-  @IsDataURI({})
-  createdAt: Date;
-
-  @Prop({ default: Date.now() })
-  updatedAt: Date;
+  
 
   @Prop({ default: false })
   isVerified: boolean;
@@ -49,6 +45,9 @@ export class User {
 
   @Prop()
   verificationCodeExpires: Date;
+
+  @Prop({ default: 'pending' })
+  status: string;
 }
 
 export const UserSchema = SchemaFactory.createForClass(User);

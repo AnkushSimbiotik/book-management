@@ -1,3 +1,4 @@
+// app.module.ts
 import { Module } from '@nestjs/common';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
@@ -28,7 +29,6 @@ import { User, UserSchema } from './schema/user.schema';
       imports: [ConfigModule],
       useFactory: async (configService: ConfigService) => {
         const uri = configService.get<string>('MONGO_URI');
-       
         return {
           uri,
           connectionFactory: (connection) => {
@@ -45,7 +45,7 @@ import { User, UserSchema } from './schema/user.schema';
     MongooseModule.forFeature([
       { name: Book.name, schema: BookSchema },
       { name: Topic.name, schema: TopicSchema },
-      { name: User.name, schema: UserSchema }, // Assuming UserEntity and UserSchema are defined in entities/user.schema.ts
+      { name: User.name, schema: UserSchema },
     ]),
     IamModule,
   ],

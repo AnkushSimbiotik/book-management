@@ -4,6 +4,7 @@ import { Types } from "mongoose";
 
 @Schema({
   toJSON: { virtuals: true },
+  timestamps : true
 })
 export class Book {
   @Prop({ required: true })
@@ -21,12 +22,7 @@ export class Book {
   @Prop({ type: Types.ObjectId, ref: 'User', required: true })
   createdBy: Types.ObjectId;
 
-  @Prop({default : Date.now()})
-    @IsDataURI({})
-    createdAt: Date;
-  
-    @Prop({ default: Date.now() })
-    updatedAt: Date;
+ 
   
 
   

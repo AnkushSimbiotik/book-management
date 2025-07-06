@@ -41,12 +41,13 @@ export class BooksService {
       .populate('topics');
 
     return await query.exec();
-
-    
   }
 
   async findOne(id: string) {
-    const book = await this.bookModel.findOne({ _id: id }).populate('topics').exec();
+    const book = await this.bookModel
+      .findOne({ _id: id })
+      .populate('topics')
+      .exec();
     if (!book) {
       throw new NotFoundException(`Book with id ${id} not found`);
     }
@@ -55,7 +56,11 @@ export class BooksService {
 
   async update(id: string, updateBookDto: UpdateBookDto) {
     const existingBook = await this.bookModel
-      .findOneAndUpdate({ _id: id }, { $set: updateBookDto }, { new: true })
+      .findOneAndUpdate(
+        { _id: id },
+        { $set: { ...updateBookDto, updatedAt: Date.now() } },
+        { new: true , runValidators: true},
+      )
       .exec();
     if (!existingBook) {
       throw new NotFoundException(`Book with id ${id} not found`);

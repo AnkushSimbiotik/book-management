@@ -1,11 +1,11 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { CreateTopicDto, UpdateTopicDto } from '../dtos/create-topic.dto';
-
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { Book } from 'src/schema/book.schema';
 import { Topic } from 'src/schema/topic.schema';
 import { PaginationQueryDto } from 'src/common/pagination.dto';
+
 
 @Injectable()
 export class TopicsService {
@@ -21,31 +21,34 @@ export class TopicsService {
   }
 
   async findAll(pagination: PaginationQueryDto) {
-  const { offset = 1, limit = 10, sort } = pagination;
+    const { offset = 1, limit = 10, sort } = pagination;
 
-  const skip = (offset - 1) * limit;
+    const skip = (offset - 1) * limit;
 
-  // Dynamic sort parsing: genre:asc,description:desc
-  let sortObject = {};
-  if (sort) {
-    sortObject = sort.split(',').reduce((acc, pair) => {
-      const [field, direction] = pair.split(':');
-      acc[field] = direction === 'desc' ? -1 : 1;
-      return acc;
-    }, {});
+    
+    let sortObject = {};
+    if (sort) {
+      sortObject = sort.split(',').reduce((acc, pair) => {
+        const [field, direction] = pair.split(':');
+        acc[field] = direction === 'desc' ? -1 : 1;
+        return acc;
+      }, {});
+    }
+
+    const query = this.topicModel
+      .find()
+      .skip(skip)
+      .limit(limit)
+      .sort(sortObject);
+
+    const topics = await query.exec();
+
+    return topics.map((topic) => ({
+      id: topic._id,
+      genre: topic.genre,
+      description: topic.description,
+    }));
   }
-
-  const query = this.topicModel.find().skip(skip).limit(limit).sort(sortObject);
-
-  const topics = await query.exec();
-
-  return topics.map((topic) => ({
-    id: topic._id,
-    genre: topic.genre,
-    description: topic.description,
-  }));
-}
-
 
   async findOne(id: string) {
     const coffee = await this.topicModel.findOne({ _id: id }).exec();
@@ -57,7 +60,11 @@ export class TopicsService {
 
   async update(id: string, updateTopicDto: UpdateTopicDto) {
     const existingTopic = await this.topicModel
-      .findOneAndUpdate({ _id: id }, { $set: updateTopicDto }, { new: true })
+      .findOneAndUpdate(
+        { _id: id },
+        { $set: { ...updateTopicDto, updatedAt: Date.now() } },
+        { new: true },
+      )
       .exec();
 
     if (!existingTopic) {
