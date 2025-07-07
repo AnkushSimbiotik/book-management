@@ -9,8 +9,7 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { HashingService } from '../hashing/hashing.service';
-import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
+
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
 
@@ -20,6 +19,8 @@ import { MailerService } from '@nestjs-modules/mailer';
 import { ConfigService } from '@nestjs/config';
 import { VerificationToken } from 'src/schema/verificationToken.schema';
 import { User } from 'src/schema/user.schema';
+import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
 
 @Injectable()
 export class AuthenticationService {
@@ -35,68 +36,68 @@ export class AuthenticationService {
     private readonly jwtConfiguration: ConfigType<typeof jwtConfig>,
   ) {}
 
-  async signUp(signUpDto: SignUpDto) {
-    try {
-      const existingUser = await this.userModel.findOne({
-        email: signUpDto.email,
-      });
-      if (existingUser) {
-        throw new ConflictException('Email already exists');
-      }
-      const user = new this.userModel({
-        username: signUpDto.username,
-        email: signUpDto.email,
-        password: await this.hashingService.hash(signUpDto.password),
-        status: 'pending', // Set status to pending
-      });
-
-      const savedUser = await user.save();
-
-      // Generate verification token (JWT)
-      const verificationToken = await this.jwtService.signAsync(
-        { sub: savedUser._id, email: savedUser.email, type: 'verification' },
-        {
-          secret: this.jwtConfiguration.secret,
-          expiresIn: '1h', // Token expires in 1 hour
-        },
-      );
-
-      // Save verification token
-      const tokenDoc = new this.verificationTokenModel({
-        token: verificationToken,
-        user: savedUser._id,
-        expiresAt: new Date(Date.now() + 1000 * 60 ), // Token expires in 1 minute
-      });
-      await tokenDoc.save();
-
-      // Send verification email
-      const verificationUrl = `${this.configService.get<string>('APP_URL')}/authentication/verify?token=${verificationToken}`;
-      await this.mailerService.sendMail({
-        to: signUpDto.email,
-        subject: 'Verify Your Email',
-        html: `
-          <h2>Email Verification</h2>
-          <p>Please click the link below to verify your email:</p>
-          <a href="${verificationUrl}">${verificationUrl}</a>
-          <p>This link will expire in 1 minute.</p>
-        `,
-      });
-
-      return {
-        id: savedUser._id,
-        username: savedUser.username,
-        email: savedUser.email,
-        message: 'Verification email sent',
-      };
-    } catch (err) {
-      console.error('SignUp Error:', err);
-      if (err.code === 11000) {
-        throw new ConflictException('Email already exists');
-      }
-      throw err;
+async signUp(signUpDto: SignUpDto) {
+  try {
+    const existingUser = await this.userModel.findOne({
+      email: signUpDto.email,
+    });
+    if (existingUser) {
+      throw new ConflictException('Email already exists');
     }
-  }
+    const user = new this.userModel({
+      username: signUpDto.username,
+      email: signUpDto.email,
+      password: await this.hashingService.hash(signUpDto.password),
+      status: 'inactive', // Set status to pending
+      isVerified: 'pending', // Align with User schema
+    });
 
+    const savedUser = await user.save();
+
+    // Generate verification token (JWT)
+    const verificationToken = await this.jwtService.signAsync(
+      { sub: savedUser._id, email: savedUser.email, type: 'verification' },
+      {
+        secret: this.jwtConfiguration.secret,
+        expiresIn: '1h', // Token expires in 1 hour
+      },
+    );
+
+    // Save verification token
+    const tokenDoc = new this.verificationTokenModel({
+      token: verificationToken,
+      user: savedUser._id,
+      expiresAt: new Date(Date.now() + 1000 * 60 * 60), // Changed to 1 hour
+    });
+    await tokenDoc.save();
+
+    // Send verification email
+    const verificationUrl = `${this.configService.get<string>('APP_URL')}/authentication/verify?token=${verificationToken}`;
+    await this.mailerService.sendMail({
+      to: signUpDto.email,
+      subject: 'Verify Your Email',
+      html: `
+        <h2>Email Verification</h2>
+        <p>Please click the link below to verify your email:</p>
+        <a href="${verificationUrl}">${verificationUrl}</a>
+        <p>This link will expire in 1 hour.</p>
+      `,
+    });
+
+    return {
+      id: savedUser._id,
+      username: savedUser.username,
+      email: savedUser.email,
+      message: 'Verification email sent',
+    };
+  } catch (err) {
+    console.error('SignUp Error:', err);
+    if (err.code === 11000) {
+      throw new ConflictException('Email already exists');
+    }
+    throw err;
+  }
+}
   async signIn(signInDto: SignInDto) {
     const user = await this.userModel.findOne({ email: signInDto.email });
     if (!user) {
@@ -149,11 +150,12 @@ export class AuthenticationService {
       throw new NotFoundException('User not found');
     }
 
-    if (user.status === 'verified') {
+    if (user.status === 'active') {
       throw new BadRequestException('Email already verified');
     }
 
-    user.status = 'verified';
+    user.isVerified = 'verified'
+    user.status = 'active';
     await user.save();
     await this.verificationTokenModel.deleteOne({ token });
 

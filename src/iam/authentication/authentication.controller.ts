@@ -11,11 +11,12 @@ import {
   Get,
 } from '@nestjs/common';
 import { AuthenticationService } from './authentication.service';
-import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
-import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
+
 
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import { Public } from 'src/common/decorators/public.decorator';
+import { SignUpDto } from './dto/sign-up.dto/sign-up.dto';
+import { SignInDto } from './dto/sign-in.dto/sign-in.dto';
 
 @Controller('authentication')
 export class AuthenticationController {

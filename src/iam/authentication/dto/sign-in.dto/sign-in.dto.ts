@@ -1,4 +1,5 @@
-import { IsEmail, Min, MinLength } from "class-validator";
+import { IsEmail, Min, MinLength, Validate } from "class-validator";
+import { MatchPasswordConstraint } from "src/common/validators/match-password.validator";
 
 export class SignInDto {
 
@@ -7,4 +8,8 @@ export class SignInDto {
 
    @MinLength(8)
     password: string;
+
+    @MinLength(8)
+    @Validate(MatchPasswordConstraint , ['password'])
+    confirmPassword : string
 }

@@ -32,15 +32,27 @@ export class BooksService {
         return acc;
       }, {});
     }
+    const totalElements = await this.bookModel.countDocuments();
+    const totalPages = Math.ceil(totalElements / limit);
 
     const query = this.bookModel
       .find()
       .skip((offset - 1) * limit)
       .limit(limit)
       .sort(sortObject)
-      .populate('topics');
+      .populate('topics')
+      .exec();
 
-    return await query.exec();
+    return {
+      
+      page: {
+        number: offset,
+        size: limit,
+        totalElements,
+        totalPages,
+      },
+      query,
+    };
   }
 
   async findOne(id: string) {
@@ -59,7 +71,7 @@ export class BooksService {
       .findOneAndUpdate(
         { _id: id },
         { $set: { ...updateBookDto, updatedAt: Date.now() } },
-        { new: true , runValidators: true},
+        { new: true, runValidators: true },
       )
       .exec();
     if (!existingBook) {

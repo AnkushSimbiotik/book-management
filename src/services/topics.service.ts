@@ -5,6 +5,7 @@ import { Model } from 'mongoose';
 import { Book } from 'src/schema/book.schema';
 import { Topic } from 'src/schema/topic.schema';
 import { PaginationQueryDto } from 'src/common/pagination.dto';
+import { off } from 'process';
 
 
 @Injectable()
@@ -25,7 +26,8 @@ export class TopicsService {
 
     const skip = (offset - 1) * limit;
 
-    
+    const totalElements = await this.topicModel.countDocuments();
+    const totalPages = Math.ceil(totalElements / limit);
     let sortObject = {};
     if (sort) {
       sortObject = sort.split(',').reduce((acc, pair) => {
@@ -43,11 +45,16 @@ export class TopicsService {
 
     const topics = await query.exec();
 
-    return topics.map((topic) => ({
-      id: topic._id,
-      genre: topic.genre,
-      description: topic.description,
-    }));
+    return {
+     
+      page : {
+        number : offset ,
+        size : limit , 
+        totalElements , 
+        totalPages
+      },
+       topics , 
+    }
   }
 
   async findOne(id: string) {

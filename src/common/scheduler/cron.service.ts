@@ -8,7 +8,7 @@ import { AuthenticationService } from "src/iam/authentication/authentication.ser
 export class CronService {
     constructor(private readonly authService : AuthenticationService){}
 
-    @Cron(CronExpression.EVERY_MINUTE)
+    @Cron(CronExpression.EVERY_HOUR)
    async handleExpiredTokens() {
     await this.authService.cleanupExpiredTokens();
     console.log('Expired tokens cleanup completed');

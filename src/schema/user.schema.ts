@@ -1,11 +1,17 @@
 import { Prop, Schema, SchemaFactory } from '@nestjs/mongoose';
-import { IsDataURI, IsEmail, IsStrongPassword, Matches, MinLength } from 'class-validator';
+import {
+  IsDataURI,
+  IsEmail,
+  IsStrongPassword,
+  Matches,
+  MinLength,
+} from 'class-validator';
 
 @Schema({
   toJSON: {
     virtuals: true,
   },
-  timestamps : true
+  timestamps: true,
 })
 export class User {
   @Prop({})
@@ -32,10 +38,8 @@ export class User {
   )
   password: string;
 
-  
-
-  @Prop({ default: false })
-  isVerified: boolean;
+  @Prop({ default: false, required: false })
+  isVerified: string;
 
   @Prop()
   verificationToken: string;
@@ -46,7 +50,7 @@ export class User {
   @Prop()
   verificationCodeExpires: Date;
 
-  @Prop({ default: 'pending' })
+  @Prop({ default: 'inactive' })
   status: string;
 }
 
