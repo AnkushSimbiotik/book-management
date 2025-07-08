@@ -9,10 +9,8 @@ import {
 import { InjectModel } from '@nestjs/mongoose';
 import { Model } from 'mongoose';
 import { HashingService } from '../hashing/hashing.service';
-
 import { ConfigType } from '@nestjs/config';
 import { JwtService } from '@nestjs/jwt';
-
 import { UpdatePasswordDto } from './dto/update-password.dto';
 import jwtConfig from '../../common/config/jwt.config';
 import { MailerService } from '@nestjs-modules/mailer';
@@ -308,6 +306,8 @@ export class AuthenticationService {
     const expiredOtpTokens = await this.otpTokenModel.find({
       expiresAt: { $lt: now },
     });
+
+    // Delete expired otp 
 
     for (const otpToken of expiredOtpTokens) {
       await this.otpTokenModel.deleteOne({ _id: otpToken._id });

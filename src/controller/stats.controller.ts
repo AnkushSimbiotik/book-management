@@ -1,6 +1,7 @@
-import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { Body, Controller, Get, Param, UseGuards } from '@nestjs/common';
 import { AuthGuard } from '@nestjs/passport';
 import { ApiBearerAuth } from '@nestjs/swagger';
+import { PaginationQueryDto } from 'src/common/pagination.dto';
 import { BooksService } from 'src/services/books.service';
 import { TopicsService } from 'src/services/topics.service';
 
@@ -23,8 +24,8 @@ export class StatsController {
     return this.topicsService.totalTopics();
   }
 
-  @Get('topic-wise-books/:topicId')
-  async totalBooksByTopic(@Param('topicId') topicId: string) {
-    return this.topicsService.getBooksByTopicId(topicId);
+  @Get('topic-wise-books')
+  async totalBooksByTopic(@Param() paginationDto : PaginationQueryDto) {
+    return this.booksService.getTopicsAndBooksGrouped(paginationDto);
   }
 }

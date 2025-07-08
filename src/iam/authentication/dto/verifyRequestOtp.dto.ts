@@ -6,6 +6,7 @@ export class VerifyResetOtpDto {
   @IsEmail()
   email: string;
 
+  @ApiProperty({required : true })
   @IsString()
   @Length(6, 6)
   otp: string;

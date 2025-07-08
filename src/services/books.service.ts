@@ -97,4 +97,76 @@ export class BooksService {
     }
     return { total };
   }
+
+async getTopicsAndBooksGrouped(
+  paginationDto : PaginationQueryDto
+) {
+  const {offset=1, limit=10 , sort} = paginationDto
+   const sortField = sort || 'topicName'; 
+  const sortDirection = sort === 'desc' ? -1 : 1;
+
+  const skip = (offset - 1) * limit;
+
+  const result = await this.bookModel.aggregate([
+    {
+      $match: {
+        isDeleted: { $ne: true },
+      },
+    },
+    {
+      $unwind: "$topics",
+    },
+    {
+      $lookup: {
+        from: "topics",
+        localField: "topics",
+        foreignField: "_id",
+        as: "topicDetails",
+      },
+    },
+    {
+      $unwind: "$topicDetails",
+    },
+    {
+      $group: {
+        _id: "$topicDetails._id",
+        topicName: { $first: "$topicDetails.genre" },
+        description: { $first: "$topicDetails.description" },
+        books: {
+          $push: {
+            _id: "$_id",
+            title: "$title",
+            author: "$author",
+          },
+        },
+      },
+    },
+    {
+      $sort: {
+        [sortField]: sortDirection, // Sort dynamically
+      },
+    },
+    {
+      $facet: {
+        metadata: [{ $count: "total" }],
+        data: [{ $skip: skip }, { $limit: limit }],
+      },
+    },
+  ]);
+
+  const metadata = result[0]?.metadata[0] || { total: 0 };
+  const totalPages = Math.ceil(metadata.total / limit);
+
+  return {
+    page: {
+      number: offset,
+      size: limit,
+      totalElements: metadata.total,
+      totalPages,
+    },
+    topics: result[0]?.data.map((entry) => entry.topicName) || [],
+    booksGroupedByTopic: result[0]?.data || [],
+  };
+}
+
 }
