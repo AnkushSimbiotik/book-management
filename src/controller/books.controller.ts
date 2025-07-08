@@ -8,13 +8,17 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { PaginationQueryDto } from 'src/common/pagination.dto';
 import { CreateBookDto, UpdateBookDto } from 'src/dtos/create-book.dto';
 import { BooksService } from 'src/services/books.service';
 
 
-
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('books')
 export class BooksController {
   constructor(private readonly booksService: BooksService) {}

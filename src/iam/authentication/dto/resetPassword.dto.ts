@@ -1,13 +1,14 @@
-import { IsEmail, IsString, IsStrongPassword, Length, MinLength } from 'class-validator';
+import { ApiProperty } from '@nestjs/swagger';
+import { IsEmail, IsString, IsStrongPassword, MinLength, Validate } from 'class-validator';
+import { MatchPasswordConstraint } from 'src/common/validators/match-password.validator';
 
 export class ResetPasswordDto {
+
+  @ApiProperty({required : true})
   @IsEmail()
   email: string;
 
-  @IsString()
-  @Length(6, 6)
-  otp: string;
-
+  @ApiProperty({required : true })
   @IsString()
   @IsStrongPassword(
     {
@@ -25,7 +26,9 @@ export class ResetPasswordDto {
   newPassword: string;
 
 
+  @ApiProperty({required : true })
    @IsString()
   @MinLength(8)
+  @Validate(MatchPasswordConstraint, ['password'])
   confirmPassword: string;
 }

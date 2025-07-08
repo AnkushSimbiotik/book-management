@@ -8,11 +8,17 @@ import {
   Delete,
   Put,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 import { TopicsService } from '../services/topics.service';
 import { CreateTopicDto, UpdateTopicDto } from '../dtos/create-topic.dto';
 import { PaginationQueryDto } from 'src/common/pagination.dto';
+import { ApiBearerAuth } from '@nestjs/swagger';
+import { AuthGuard } from '@nestjs/passport';
 
+
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('topics')
 export class TopicsController {
   constructor(private readonly topicsService: TopicsService) {}

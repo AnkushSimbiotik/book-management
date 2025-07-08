@@ -7,12 +7,17 @@ import {
   Param,
   Delete,
   Query,
+  UseGuards,
 } from '@nestjs/common';
 
 import { CreateUserDto, UpdateUserDto } from '../dtos/create-user.dto';
 import { UsersService } from 'src/services/users.service';
 import { PaginationQueryDto } from 'src/common/pagination.dto';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('users')
 export class UsersController {
   constructor(private readonly usersService: UsersService) {}

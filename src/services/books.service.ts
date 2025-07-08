@@ -35,7 +35,7 @@ export class BooksService {
     const totalElements = await this.bookModel.countDocuments();
     const totalPages = Math.ceil(totalElements / limit);
 
-    const query = this.bookModel
+    const query = await this.bookModel
       .find()
       .skip((offset - 1) * limit)
       .limit(limit)
@@ -51,7 +51,7 @@ export class BooksService {
         totalElements,
         totalPages,
       },
-      query,
+      data : query,
     };
   }
 

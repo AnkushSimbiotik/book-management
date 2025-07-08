@@ -11,16 +11,23 @@ import { BooksService } from './services/books.service';
 import { StatsController } from './controller/stats.controller';
 import { BooksController } from './controller/books.controller';
 import { UsersController } from './controller/users.controller';
-
-import jwtConfig from './iam/config/jwt.config';
-import { JwtService } from '@nestjs/jwt';
+import { JwtModule, JwtService } from '@nestjs/jwt';
 import { Topic, TopicSchema } from './schema/topic.schema';
 import { Book, BookSchema } from './schema/book.schema';
 import { UsersService } from './services/users.service';
 import { User, UserSchema } from './schema/user.schema';
+import jwtConfig from './common/config/jwt.config';
+import { JwtStrategy } from './common/config/jwt.strategy';
+import { PassportModule } from '@nestjs/passport';
+import { JwtAuthGuard } from './common/guards/jwt.guard';
+import { APP_GUARD } from '@nestjs/core';
+
 
 @Module({
   imports: [
+    PassportModule.register({
+      defaultStrategy: 'jwt',
+    }),
     ConfigModule.forRoot({
       isGlobal: true,
       load: [jwtConfig],
@@ -48,6 +55,12 @@ import { User, UserSchema } from './schema/user.schema';
       { name: User.name, schema: UserSchema },
     ]),
     IamModule,
+    JwtModule.register({
+      secret: process.env.JWT_ACCESS_TOKEN_SECRET,
+      signOptions: {
+        expiresIn: process.env.JWT_ACCESS_TOKEN_EXPIRY,
+      },
+    }),
   ],
   controllers: [
     AppController,
@@ -62,6 +75,12 @@ import { User, UserSchema } from './schema/user.schema';
     BooksService,
     UsersService,
     JwtService,
+    JwtStrategy,
+    
+    /* {
+      provide: APP_GUARD,
+      useClass: JwtAuthGuard,
+    }, */
   ],
 })
 export class AppModule {}

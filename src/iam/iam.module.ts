@@ -11,17 +11,20 @@ import { AuthenticationController } from './authentication/authentication.contro
 import { BcryptService } from './hashing/bcrypt.service';
 import { HashingService } from './hashing/hashing.service';
 import { APP_GUARD } from '@nestjs/core';
-import { AccessTokenGuard } from './authentication/guards/access-token/access-token.guard';
+import { AccessTokenGuard } from '../common/guards/access-token.guard';
 import { VerificationToken, VerificationTokenSchema } from 'src/schema/verificationToken.schema';
 import { ScheduleModule } from '@nestjs/schedule';
 import { CronService } from 'src/common/scheduler/cron.service';
+import { OtpToken, OtpTokenSchema } from 'src/schema/otp-token.schema';
+import jwtConfig from 'src/common/config/jwt.config';
 
 @Module({
    imports: [
-    ConfigModule.forRoot({ isGlobal: true }),
+    ConfigModule.forRoot({ isGlobal: true , load: [jwtConfig]}),
     MongooseModule.forFeature([
       { name: User.name, schema: UserSchema },
       { name: VerificationToken.name, schema: VerificationTokenSchema },
+      {name : OtpToken.name , schema : OtpTokenSchema}
     ]),
     JwtModule.registerAsync({
       imports: [ConfigModule],

@@ -1,7 +1,11 @@
-import { Controller, Get, Param } from '@nestjs/common';
+import { Controller, Get, Param, UseGuards } from '@nestjs/common';
+import { AuthGuard } from '@nestjs/passport';
+import { ApiBearerAuth } from '@nestjs/swagger';
 import { BooksService } from 'src/services/books.service';
 import { TopicsService } from 'src/services/topics.service';
 
+@ApiBearerAuth()
+@UseGuards(AuthGuard('jwt'))
 @Controller('stats')
 export class StatsController {
   constructor(
